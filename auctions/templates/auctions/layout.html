@@ -1,0 +1,53 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>{% block title %}Auctions{% endblock %}</title>
+        <link href="{% static 'auctions/styles.css' %}" rel="stylesheet">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        {% block style %}
+        {% endblock %}
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    </head>
+    <body>
+        <h1>Auctions</h1>
+        <div>
+            {% if user.is_authenticated %}
+                Signed in as <strong>{{ user.username }}</strong>.
+            {% else %}
+                Not signed in.
+            {% endif %}
+        </div>
+        <div class="nav">
+            <h4>
+                <a href="{% url 'index' %}">Active listings</a>
+            </h4>
+            {% if user.is_authenticated %}
+                <h4>
+                    <a href="">Categories</a>
+                </h4>
+                <h4>
+                    <a href="">Watchlist</a>
+                </h4>
+                <h4>
+                    <a href="{% url 'create_listing'%}">Create Listing</a>
+                </h4>
+                <h4>
+                    <a href="{% url 'logout' %}">Log Out</a>
+                </h4>
+            {% else %}
+                <h4>
+                    <a href="{% url 'login' %}">Log In</a>
+                </h4>
+                <h4>
+                    <a href="{% url 'register' %}">Register</a>
+                </h4>
+            {% endif %}
+            </div>
+        <hr>
+        {% block body %}
+        {% endblock %}
+    </body>
+</html>

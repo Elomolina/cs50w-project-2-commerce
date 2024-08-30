@@ -1,0 +1,103 @@
+body {
+    padding: 10px;
+    font-family: "Poppins", system-ui;
+}
+.nav
+{
+    display: flex;
+    gap: 1em;
+    justify-content: flex-start;
+}
+.nav li 
+{
+    list-style-type: none;
+}
+.login 
+{
+    background-color: grey;
+    opacity: 0.8;
+    border-radius: 10px;
+    width: 50%;
+    padding: 2em;
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    align-items: center;
+}
+.login div 
+{
+    display: flex;
+    justify-content: center;
+    width: 90%;
+}
+.login input
+{
+    border-radius: 10px;
+    border: 2px solid transparent;
+    outline-color: grey;
+    width: 100%;
+    padding: 1em;
+}
+.login input[type=submit]
+{
+    width: 60%;
+    box-shadow: 2px 2px 2px 2px rgba(0,0,0,0.2);
+}
+.listing 
+{
+    width: 70%;
+    border: 1px solid grey;
+    margin-bottom: 1em;
+}
+.listing h3 
+{
+    font-weight: 400;
+}
+.listing img 
+{
+    width: 300px;
+    height: 300px;
+}
+.information 
+{
+    border: 2px solid black;
+    border-radius: 10px;
+    color: black;
+    padding: 1em;
+    background-color: rgb(174, 172, 172);
+    display: flex;
+    flex-direction: column;
+    justify-content: center
+}
+.information h2 
+{
+    text-align: center;
+}
+main 
+{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.main a 
+{
+    display: flex;
+    text-decoration: none;
+    justify-content: space-around;
+    gap: 1em;
+    transition: 0.5s;
+    padding: 1.5em;
+}
+.main a:hover 
+{
+    background-color: #dab1b1;
+}
+@media(max-width:800px)
+{
+    .main a 
+    {
+        flex-direction: column;
+        gap: 1em;
+        align-items: center;
+    }
+}

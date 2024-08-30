@@ -1,0 +1,33 @@
+{% extends 'auctions/layout.html'%}
+{% load static%}
+
+{% block title %}
+Create listing
+{% endblock %}
+{% block style %}
+<link rel="stylesheet" href="{%static 'auctions/create.css'%}">
+{% endblock %}
+{% block body %}
+<h1>Create listing</h1>
+<main>
+    <form action="{%url 'create_listing'%}" method="post" class="login create">
+        {% csrf_token %}
+        {{form}}
+        <div>
+            <label for="">Category(optional):
+                <br>
+                <h6>
+                    Add your own category if not in the listing
+                </h6>
+            </label>
+            <input list="categories" name="category" autocomplete="off">
+            <datalist id="categories">
+                {% for category in categories %}
+                <option value="{{category.category}}">
+                {% endfor %}
+            </datalist>
+        </div>
+        <input type="submit" value="Add listing">
+    </form>
+</main>
+{% endblock %}

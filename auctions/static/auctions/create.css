@@ -1,0 +1,52 @@
+.create 
+{
+    width: 60%;
+    color: white;
+    background-color: rgb(157, 42, 61);
+}
+.create div 
+{
+    width: 90%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 1em;
+}
+.create div label 
+{
+    width: 40%;
+}
+.create div input 
+{
+    width: 50%;
+}
+.create div select 
+{
+    width: 53%;
+    padding: 1em;
+}
+main 
+{
+    display: flex;
+    justify-content: center;
+}
+.create input[type=submit]
+{
+    transition: 0.5s;
+}
+.create input[type=submit]:hover
+{
+    background-color: black;
+    color: white;
+}
+.errorlist li 
+{
+    color: black;
+    list-style-type: none;
+}
+h6 
+{
+    margin: 0;
+    margin-top: 0.5em;
+    font-weight: 200;
+}
