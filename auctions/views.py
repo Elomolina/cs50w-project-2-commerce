@@ -4,15 +4,20 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.db.models import Max
 from django.shortcuts import render, redirect
+from django.forms.models import model_to_dict
 from django.urls import reverse
 from .forms import *
 from .models import *
+import json
 
-#creation of watchlist
-watchlist_list = set()
 
 def index(request):
+    if "watchlist_count" not in request.session:
+            request.session['watchlist_count'] = 0
+    if "watchlist" not in request.session:
+        request.session['watchlist'] = list()
     listings = AuctionListing.objects.all()
+    print(request.session['watchlist_count'])
     return render(request, "auctions/index.html", {
         "listings":listings
         })
@@ -106,6 +111,8 @@ def listing_detail(request, id):
 
 def bids_for_listing(request, id, form, error_bid):
     listing = AuctionListing.objects.get(pk = id)
+    listing_dict = model_to_dict(listing)
+    listing_serialize = json.dumps(listing_dict)
     #get the bids made and the maximum one
     bid = len(Bid.objects.filter(listing_id = listing))
     max_bid = Bid.objects.filter(listing_id = listing).aggregate(Max("bid"))
@@ -114,7 +121,7 @@ def bids_for_listing(request, id, form, error_bid):
         current_bid = "There are no bids placed yet"
     else:
         current_bid = f"The current bid is at ${max_bid['bid__max']}"
-    if listing in watchlist_list:
+    if listing_serialize in request.session['watchlist']:
         return render(request, "auctions/listing_detail.html", {
         "listing": listing,
         "watchlist": 'Remove from watchlist',
@@ -183,12 +190,23 @@ def watchlist(request, id):
     if request.method == "POST":
         state = request.POST
         listing = AuctionListing.objects.get(pk = id)
+        #convert model to  dict
+        listing_dict = model_to_dict(listing)
+        #serialize listing
+        listing_serializada = json.dumps(listing_dict)
         # delete element from watchlist
         if 'remove' in state:
-            watchlist_list.remove(listing)
+            watchlist_nueva = request.session['watchlist']
+            #delete listing from watchlist
+            watchlist_nueva.remove(listing_serializada)
+            request.session['watchlist'] = watchlist_nueva
+            request.session['watchlist_count'] = len(request.session['watchlist'])
             return redirect(reverse("listing_detail", args=[id]))
         #add element to watchlist
         elif 'add' in state:
-            watchlist_list.add(listing)
+            #adds listing to watchlist if not already in it
+            if listing_serializada not in request.session['watchlist']:
+                request.session['watchlist'] += [listing_serializada]
+            request.session['watchlist_count'] = len(request.session['watchlist'])
             return redirect(reverse("listing_detail", args=[id]))
     return redirect(reverse("index"))
