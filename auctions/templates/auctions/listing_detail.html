@@ -1,0 +1,51 @@
+{% extends 'auctions/layout.html'%}
+{% load static %}
+{% block title%}
+listing
+{% endblock %}
+{% block style %}
+<link rel="stylesheet" href="{% static 'auctions/listing_detail.css'%}">
+{% endblock %}
+{%block body %}
+<main class="main-listing">
+    <section class="main-info">
+        <div class="main-div">
+            <h1>Listing: {{listing.title}}</h1>
+            {% if user.is_authenticated %}
+            <form action="{% url 'watchlist' listing.id%}" method="post" class="watchlist">
+                {% csrf_token %}
+                <input type="submit" value="{{watchlist}}" name="{{state}}" class="{{state}}">
+            </form>
+            {% endif %}
+            <img src="{{listing.image_url}}">
+            <p>Description: {{listing.description}}</p>
+        </div>
+        <hr>
+        <div>
+            <h3>Starting bid: ${{listing.starting_bid}}</h3>
+            {% if user.is_authenticated %}
+            <h5>{{bid}} bid(s) so far, {{current_bid}}.</h5>
+            <form action="{% url 'listing_detail' listing.id%}" class="bid" method="post">
+                {% csrf_token %}
+                {{form}}
+                <input type="submit" value="Place Bid">
+            </form>
+            <h4 class="error_bid">
+                {{error_bid}}
+            </h4>
+            {% else %}
+            <h5>You need to sign in to be able to bid on an item</h5>
+            {% endif %}
+        </div>
+    </section>
+    <h2>Details</h2>
+    <ul>
+        <li>Listed by: <a href="">{{listing.user_id}}</a></li>
+        {% if listing.category_id is not None%}
+        <li>Category: <a href="">{{listing.category_id}}</a></li>
+        {% else %}
+        <li>Category: No category listed</li>
+        {% endif %}
+    </ul>
+</main>
+{% endblock %}

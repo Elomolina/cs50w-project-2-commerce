@@ -1,0 +1,101 @@
+.main-listing img 
+{
+    height: 300px;
+    width: 300px;
+}
+.main-listing h1, .main-listing h3
+{
+    font-weight: 400;
+}
+.main-info 
+{
+    border-bottom: 1px solid grey;
+    display: flex;
+    gap: 1em;
+}
+.main-info div 
+{
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.bid 
+{
+    border: 2px solid grey;
+    box-shadow: 2px 2px 2px 2px rgba(0,0,0,0.2);
+    padding: 2em;
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.bid input[type=number]
+{
+    width: 80%;
+    padding-top: 1em;
+    padding-bottom: 1em;
+    border-radius: 10px;
+    border: 2px solid grey;
+    text-align: center;
+}
+.bid input[type=submit]
+{
+    padding: 1em;
+    width: 50%;
+    margin-top: 1em;
+    border-radius: 10px;
+    background-color: black;
+    color: white;
+    font-weight: bold;
+    border: 1px solid black;
+}
+
+.add 
+{
+    margin: 0.5em;
+    padding: 0.5em;
+    background-color: rgb(53, 53, 53);
+    border: 2px solid rgb(53, 53, 53);
+    color: white;
+    font-weight: bold;
+    transition: 0.5s;   
+}
+.remove 
+{
+    margin: 0.5em;
+    padding: 0.5em;
+    font-weight: bold;
+    border: 2px solid rgb(117, 14, 14);
+    background-color: rgb(117, 14, 14);
+    color: white;
+    transition: 0.5s;
+}
+.error_bid 
+{
+    color: red;
+}
+.watchlist input:hover 
+{
+    transform: scale(1.05);
+}
+@media(max-width:800px)
+{
+    .main-info
+    {
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 0;
+        padding-bottom: 2em;
+    }
+    .main-info div 
+    {
+        width: 100%;
+    }
+    .main-div 
+    {
+        border-bottom: 1px solid black;
+    }
+}

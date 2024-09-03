@@ -2,11 +2,14 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
+from django.db.models import Max
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from .forms import *
 from .models import *
 
+#creation of watchlist
+watchlist_list = set()
 
 def index(request):
     listings = AuctionListing.objects.all()
@@ -66,6 +69,71 @@ def register(request):
     else:
         return render(request, "auctions/register.html")
 
+
+def listing_detail(request, id):
+    if request.method == "POST":
+        form = BidForm(request.POST)
+        if form.is_valid():
+            bid = form.cleaned_data['bid']
+            starting_bid = AuctionListing.objects.get(pk = id)
+            bids_placed = Bid.objects.filter(listing_id = starting_bid)
+            #bid too small
+            if bid < starting_bid.starting_bid:
+                return bids_for_listing(request,id, form, "The bid must be bigger than the starting bid")
+            #no bids placed yet
+            elif len(bids_placed) == 0 and bid >= starting_bid.starting_bid:
+                #create new bid
+                new_bid = Bid(listing_id = starting_bid, user_biding = request.user, bid = bid)
+                new_bid.save()
+                return redirect(reverse("listing_detail",args=[id]))
+            #bids already placed
+            else:
+                #check the max
+                max_bid = Bid.objects.filter(listing_id = starting_bid).aggregate(Max("bid"))
+                if bid > max_bid['bid__max']:
+                    new_bid = Bid(listing_id = starting_bid, user_biding = request.user, bid = bid)
+                    new_bid.save()
+                    return redirect(reverse("listing_detail",args=[id]))
+                #bid is smaller than the current one
+                else:
+                    return bids_for_listing(request,id, form, "The bid must be bigger than the current bid")
+            #check that bid is greater than the current bid
+        else:
+             return redirect(reverse("listing_detail", args=[id])) 
+    form = BidForm()
+    return bids_for_listing(request,id, form, "")
+
+
+def bids_for_listing(request, id, form, error_bid):
+    listing = AuctionListing.objects.get(pk = id)
+    #get the bids made and the maximum one
+    bid = len(Bid.objects.filter(listing_id = listing))
+    max_bid = Bid.objects.filter(listing_id = listing).aggregate(Max("bid"))
+    current_bid = ''
+    if max_bid['bid__max'] is None:
+        current_bid = "There are no bids placed yet"
+    else:
+        current_bid = f"The current bid is at ${max_bid['bid__max']}"
+    if listing in watchlist_list:
+        return render(request, "auctions/listing_detail.html", {
+        "listing": listing,
+        "watchlist": 'Remove from watchlist',
+        "state": "remove", 
+        "form":form,
+        "bid": bid,
+        "current_bid": current_bid,
+        "error_bid": error_bid
+    })    
+    return render(request, "auctions/listing_detail.html", {
+        "listing": listing,
+        "watchlist": 'Add to watchlist',
+        "state":"add",
+        "form":form,
+        "bid":bid,
+        "current_bid": current_bid,
+        "error_bid": error_bid
+    })
+
 @login_required(login_url='/login')
 def create_listing(request):
     if request.method == "POST":
@@ -92,12 +160,13 @@ def create_listing(request):
                 listing = AuctionListing(title = title, description = description, starting_bid = starting_bid,
                            image_url = image_url, category_id = category_obj, user_id = user)
                 listing.save()
-                return redirect(reverse("create_listing"))
+                return redirect(reverse("index"))
                 
             #insert data to the listing table
             listing = AuctionListing(title = title, description = description, starting_bid = starting_bid,
                            image_url = image_url, category_id = check_category,user_id = user)
             listing.save()
+            return redirect(reverse("index"))
         else:
             return render(request, "auctions/create.html",
                           {
@@ -109,3 +178,17 @@ def create_listing(request):
                       "form": form,
                       "categories": categories
                   })
+
+def watchlist(request, id):
+    if request.method == "POST":
+        state = request.POST
+        listing = AuctionListing.objects.get(pk = id)
+        # delete element from watchlist
+        if 'remove' in state:
+            watchlist_list.remove(listing)
+            return redirect(reverse("listing_detail", args=[id]))
+        #add element to watchlist
+        elif 'add' in state:
+            watchlist_list.add(listing)
+            return redirect(reverse("listing_detail", args=[id]))
+    return redirect(reverse("index"))
