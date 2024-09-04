@@ -80,6 +80,21 @@
 {
     transform: scale(1.05);
 }
+#closeBid
+{
+    background-color: rgb(187, 20, 20);
+    border: rgb(187, 20, 20);
+    box-shadow: 2px 2px 2px 2px rgba(187,20,20,0.2);
+    transition: 0.5s;
+}
+#closeBid:hover 
+{
+    transform: scale(1.1);
+}
+.user_bid
+{
+    color: red;
+}
 @media(max-width:800px)
 {
     .main-info

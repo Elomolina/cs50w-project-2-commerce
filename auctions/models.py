@@ -14,13 +14,12 @@ class AuctionListing(models.Model):
     title = models.CharField(max_length=100)
     description = models.CharField(max_length=300)
     starting_bid = models.FloatField()
-    image_url = models.URLField(max_length=900, blank=True)
+    image_url = models.URLField(max_length=1500, blank=True)
     category_id = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="categories", blank=True, null=True)
     datetime = models.DateField(auto_now_add=True)
     user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name="listings")
     def __str__(self):
         return f"{self.title}, {self.description}, {self.starting_bid}, {self.image_url}, {self.category_id}, {self.datetime}, {self.user_id}"
-
 
 class Bid(models.Model):
     listing_id = models.ForeignKey(AuctionListing, on_delete=models.CASCADE, related_name="bids")

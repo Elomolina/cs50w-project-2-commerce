@@ -11,11 +11,14 @@ listing
     <section class="main-info">
         <div class="main-div">
             <h1>Listing: {{listing.title}}</h1>
-            {% if user.is_authenticated %}
+            <!-- add to watchlist only if the user is not the one creating the listing -->
+            {% if user.is_authenticated and user != listing.user_id %}
             <form action="{% url 'watchlist' listing.id%}" method="post" class="watchlist">
                 {% csrf_token %}
                 <input type="submit" value="{{watchlist}}" name="{{state}}" class="{{state}}">
             </form>
+            {% elif user.is_authenticated and user == listing.user_id%}
+            <h3>You listed this item</h3>
             {% endif %}
             <img src="{{listing.image_url}}">
             <p>Description: {{listing.description}}</p>
@@ -24,7 +27,12 @@ listing
         <div>
             <h3>Starting bid: ${{listing.starting_bid}}</h3>
             {% if user.is_authenticated %}
-            <h5>{{bid}} bid(s) so far, {{current_bid}}.</h5>
+            {% if user == user_biding %}
+            <h5>{{bid}} bid(s) so far, {{current_bid}}, <span class="user_bid">you made this bid.</span></h5>
+           {% else %}
+           <h5>{{bid}} bid(s) so far, {{current_bid}}, made by <a href="{% url 'userListings' user_biding.id %}">{{user_biding}}</a></h5>
+           {% endif %}
+            {% if user != listing.user_id %}
             <form action="{% url 'listing_detail' listing.id%}" class="bid" method="post">
                 {% csrf_token %}
                 {{form}}
@@ -34,15 +42,25 @@ listing
                 {{error_bid}}
             </h4>
             {% else %}
-            <h5>You need to sign in to be able to bid on an item</h5>
+            <form action="" class="bid" method="post">
+                {% csrf_token %}
+                <input type="submit" value="Close Bid" id="closeBid">
+            </form>
+            {% endif %}
+            {% else %}
+            <h4>You need to <a href="{% url 'login'%}">sign in</a> to be able to bid on an item</h4>
             {% endif %}
         </div>
     </section>
     <h2>Details</h2>
     <ul>
-        <li>Listed by: <a href="">{{listing.user_id}}</a></li>
+        {% if user == listing.user_id %}
+        <li>Listed by: <a href="{% url 'myListings'%}">You listed this item</a></li>
+        {%else%}
+        <li>Listed by: <a href="{% url 'userListings' listing.user_id.id%}">{{listing.user_id}}</a></li>
+        {% endif %}
         {% if listing.category_id is not None%}
-        <li>Category: <a href="">{{listing.category_id}}</a></li>
+        <li>Category: <a href="{% url 'category_detail' listing.category_id.id%}">{{listing.category_id}}</a></li>
         {% else %}
         <li>Category: No category listed</li>
         {% endif %}

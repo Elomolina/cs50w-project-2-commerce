@@ -17,9 +17,12 @@ def index(request):
     if "watchlist" not in request.session:
         request.session['watchlist'] = list()
     listings = AuctionListing.objects.all()
-    print(request.session['watchlist_count'])
+    empty_message = ''
+    if len(listings) == 0:
+        empty_message = 'There are no active listings right now'
     return render(request, "auctions/index.html", {
-        "listings":listings
+        "listings":listings,
+        "empty_message": empty_message
         })
 
 
@@ -74,6 +77,17 @@ def register(request):
     else:
         return render(request, "auctions/register.html")
 
+@login_required(login_url='/login')
+def myListings(request):
+    user = request.user
+    listings = user.listings.all()
+    empty_message = ''
+    if len(listings) == 0:
+        "You haven't made any listings"
+    return render(request, "auctions/myListings.html", {
+        "listings": listings,
+        "empty_message": empty_message
+    })
 
 def listing_detail(request, id):
     if request.method == "POST":
@@ -115,7 +129,15 @@ def bids_for_listing(request, id, form, error_bid):
     listing_serialize = json.dumps(listing_dict)
     #get the bids made and the maximum one
     bid = len(Bid.objects.filter(listing_id = listing))
+    #get max bid
     max_bid = Bid.objects.filter(listing_id = listing).aggregate(Max("bid"))
+    #get the user who did the max bid
+    user_bids = Bid.objects.filter(bid = max_bid['bid__max'])
+    if len(user_bids) > 0:
+        user_bids = user_bids[0].user_biding
+    else:
+        #if no one has made a bid get the user who posted the starting bid
+        user_bids = listing.user_id
     current_bid = ''
     if max_bid['bid__max'] is None:
         current_bid = "There are no bids placed yet"
@@ -129,7 +151,8 @@ def bids_for_listing(request, id, form, error_bid):
         "form":form,
         "bid": bid,
         "current_bid": current_bid,
-        "error_bid": error_bid
+        "error_bid": error_bid,
+        "user_biding": user_bids
     })    
     return render(request, "auctions/listing_detail.html", {
         "listing": listing,
@@ -138,7 +161,8 @@ def bids_for_listing(request, id, form, error_bid):
         "form":form,
         "bid":bid,
         "current_bid": current_bid,
-        "error_bid": error_bid
+        "error_bid": error_bid, 
+        "user_biding": user_bids
     })
 
 @login_required(login_url='/login')
@@ -186,6 +210,7 @@ def create_listing(request):
                       "categories": categories
                   })
 
+@login_required(login_url='/login')
 def watchlist(request, id):
     if request.method == "POST":
         state = request.POST
@@ -210,3 +235,47 @@ def watchlist(request, id):
             request.session['watchlist_count'] = len(request.session['watchlist'])
             return redirect(reverse("listing_detail", args=[id]))
     return redirect(reverse("index"))
+
+@login_required(login_url='/login')
+def watch(request):
+    listings = []
+    empty_message = ''
+    if len(request.session['watchlist']) == 0:
+        empty_message = "You don't have any listings in your watchlist "
+    for i in request.session['watchlist']:
+        listing_dict = json.loads(i)
+        listings.append(listing_dict)
+    return render(request, "auctions/watchlist.html", {
+        "listings": listings,
+        "empty_message": empty_message
+    })
+
+@login_required(login_url='/login')
+def categories(request):
+    categories = Category.objects.all()
+    return render(request, "auctions/categories.html", {
+        "categories": categories
+    })
+
+@login_required(login_url='/login')
+def category_detail(request, id):
+    category = Category.objects.get(pk = id)
+    listing = category.categories.all()
+    empty_message = ''
+    if len(listing) == 0:
+        empty_message = f"There are no listings for {category}"
+    return render(request, "auctions/category_detail.html", {
+        "listings": listing,
+        "category": category,
+        "empty_message": empty_message
+    })
+
+@login_required(login_url='/login')
+def userListings(request, id):
+    user_listings = User.objects.get(pk = id)
+    listings = user_listings.listings.all()
+    return render(request, "auctions/userListings.html", 
+                  {
+                      "user_listings": user_listings, 
+                      "listings": listings
+                  })

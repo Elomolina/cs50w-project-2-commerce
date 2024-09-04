@@ -2,21 +2,5 @@
 
 {% block body %}
 <h2>Active Listings</h2>
-<main class="main">
-    {% for listing in listings %}
-    <div class="listing">
-    <a href="{% url 'listing_detail' listing.id%}">
-            <img src="{{listing.image_url}}">
-            <div class="information">
-                <h2>{{listing.title}}</h2>
-                <h3><b>Price:</b> ${{listing.starting_bid}}</h3>
-                {% if listing.category_id is not None%}
-                <h3><b>Category:</b> {{listing.category_id}}</h3>
-                {% endif %}
-                <h5>Created: {{listing.datetime}}</h5>
-            </div>
-        </a>
-    </div>
-    {% endfor %}
-</main>
+{% include 'auctions/listings.html' %}
 {% endblock %}

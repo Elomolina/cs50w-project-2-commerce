@@ -26,16 +26,16 @@
             </h4>
             {% if user.is_authenticated %}
                 <h4>
-                    <a href="">Categories</a>
+                    <a href="{% url 'categories'%}">Categories</a>
                 </h4>
                 <h4>
-                    <a href="">Watchlist</a> <span class="watchlist_count">{{request.session.watchlist_count}}</span> 
+                    <a href="{% url 'watch'%}">Watchlist</a> <span class="watchlist_count">{{request.session.watchlist_count}}</span> 
                 </h4>
                 <h4>
                     <a href="{% url 'create_listing'%}">Create Listing</a>
                 </h4>
                 <h4>
-                    <a href="{% url 'logout' %}">My listings</a>
+                    <a href="{% url 'myListings' %}">My listings</a>
                 </h4>
                 <h4>
                     <a href="{% url 'logout' %}">Log Out</a>

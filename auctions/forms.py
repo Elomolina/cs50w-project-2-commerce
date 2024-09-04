@@ -9,7 +9,7 @@ class CreateForm(forms.Form):
     starting_bid = forms.FloatField(label="Starting bid",required=True, error_messages={
         "required": "This field is required"
     })
-    image_url = forms.URLField(label="Image url(optional)",max_length=900, required=False, error_messages={
+    image_url = forms.URLField(label="Image url(optional)",max_length=1500, required=False, error_messages={
         "required": "This field is required"
     })
 

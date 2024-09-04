@@ -1,0 +1,11 @@
+{%extends 'auctions/layout.html'%}
+{% load static %}
+
+{% block title %}
+Category detail 
+{% endblock %}
+ 
+{% block body %}
+<h2>Listings for: {{category}}</h2>
+{% include "auctions/listings.html" %}
+{% endblock %}
