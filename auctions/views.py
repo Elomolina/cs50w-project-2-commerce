@@ -16,13 +16,19 @@ def index(request):
             request.session['watchlist_count'] = 0
     if "watchlist" not in request.session:
         request.session['watchlist'] = list()
-    listings = AuctionListing.objects.all()
+    unlisted = ''
+    try:
+        unlisted = Category.objects.get(category = "Unlisted")
+    except Category.DoesNotExist:
+        Category.objects.create(category = "Unlisted")
+    listings = AuctionListing.objects.filter(closed_auction = False)
     empty_message = ''
     if len(listings) == 0:
         empty_message = 'There are no active listings right now'
     return render(request, "auctions/index.html", {
         "listings":listings,
-        "empty_message": empty_message
+        "empty_message": empty_message,
+        "unlisted": unlisted
         })
 
 
@@ -81,12 +87,14 @@ def register(request):
 def myListings(request):
     user = request.user
     listings = user.listings.all()
+    unlisted = Category.objects.get(category = "Unlisted")
     empty_message = ''
     if len(listings) == 0:
-        "You haven't made any listings"
+        empty_message = "You haven't made any listings"
     return render(request, "auctions/myListings.html", {
         "listings": listings,
-        "empty_message": empty_message
+        "empty_message": empty_message, 
+        "unlisted": unlisted
     })
 
 def listing_detail(request, id):
@@ -124,9 +132,19 @@ def listing_detail(request, id):
 
 
 def bids_for_listing(request, id, form, error_bid):
+    coment_form = ComentForm()
     listing = AuctionListing.objects.get(pk = id)
+    unlisted = Category.objects.get(category = "Unlisted")
     listing_dict = model_to_dict(listing)
     listing_serialize = json.dumps(listing_dict)
+    winner = ''
+    selling_price = ''
+    listing_comments = listing.listing_comments.all()
+    #check if auction is closed
+    if listing.closed_auction: 
+        winner_bid = ClosedBid.objects.get(listing_id = listing)
+        winner = winner_bid.winning_user
+        selling_price = winner_bid.selling_price
     #get the bids made and the maximum one
     bid = len(Bid.objects.filter(listing_id = listing))
     #get max bid
@@ -152,7 +170,12 @@ def bids_for_listing(request, id, form, error_bid):
         "bid": bid,
         "current_bid": current_bid,
         "error_bid": error_bid,
-        "user_biding": user_bids
+        "user_biding": user_bids,
+        "unlisted": unlisted, 
+        "winner": winner,
+        "selling_price": selling_price, 
+        "coment_form": coment_form,
+        "listing_comments": listing_comments
     })    
     return render(request, "auctions/listing_detail.html", {
         "listing": listing,
@@ -162,7 +185,12 @@ def bids_for_listing(request, id, form, error_bid):
         "bid":bid,
         "current_bid": current_bid,
         "error_bid": error_bid, 
-        "user_biding": user_bids
+        "user_biding": user_bids, 
+        "unlisted":unlisted,
+        "winner": winner,
+        "selling_price": selling_price, 
+        "coment_form": coment_form, 
+        "listing_comments": listing_comments
     })
 
 @login_required(login_url='/login')
@@ -177,7 +205,28 @@ def create_listing(request):
             image_url = form.cleaned_data['image_url']
             category = request.POST['category']
             user = request.user
-            # check if category is in the category table
+
+            if len(category) == 0:
+                #create category unlisted
+                try:
+                    unlisted = Category.objects.get(category = "Unlisted")
+                    listing = AuctionListing(title = title, description = description, starting_bid = starting_bid,
+                           image_url = image_url, category_id = unlisted,user_id = user)
+                    listing.save()
+                    add_bid = Bid(listing_id = listing, user_biding = user, bid = starting_bid)
+                    add_bid.save()
+                except Category.DoesNotExist:
+                    #create unlisted category
+                    Category.objects.create(category = "Unlisted")
+                    unlisted = Category.objects.get(category = "Unlisted")
+                    listing = AuctionListing(title = title, description = description, starting_bid = starting_bid,
+                           image_url = image_url, category_id = unlisted,user_id = user)
+                    listing.save()
+                    add_bid = Bid(listing_id = listing, user_biding = user, bid = starting_bid)
+                    add_bid.save()
+                return redirect(reverse("index"))
+            
+            # check if category is in the category table    
             check_category = ''
             try:
                 check_category = Category.objects.get(category = category)
@@ -191,12 +240,16 @@ def create_listing(request):
                 listing = AuctionListing(title = title, description = description, starting_bid = starting_bid,
                            image_url = image_url, category_id = category_obj, user_id = user)
                 listing.save()
+                add_bid = Bid(listing_id = listing, user_biding = user, bid = starting_bid)
+                add_bid.save()
                 return redirect(reverse("index"))
                 
             #insert data to the listing table
             listing = AuctionListing(title = title, description = description, starting_bid = starting_bid,
                            image_url = image_url, category_id = check_category,user_id = user)
             listing.save()
+            add_bid = Bid(listing_id = listing, user_biding = user, bid = starting_bid)
+            add_bid.save()
             return redirect(reverse("index"))
         else:
             return render(request, "auctions/create.html",
@@ -239,14 +292,17 @@ def watchlist(request, id):
 @login_required(login_url='/login')
 def watch(request):
     listings = []
+    unlisted = Category.objects.get(category = "Unlisted")
     empty_message = ''
     if len(request.session['watchlist']) == 0:
         empty_message = "You don't have any listings in your watchlist "
     for i in request.session['watchlist']:
         listing_dict = json.loads(i)
         listings.append(listing_dict)
+    print(listings)
     return render(request, "auctions/watchlist.html", {
         "listings": listings,
+        "unlisted": unlisted,
         "empty_message": empty_message
     })
 
@@ -260,12 +316,14 @@ def categories(request):
 @login_required(login_url='/login')
 def category_detail(request, id):
     category = Category.objects.get(pk = id)
+    unlisted = Category.objects.get(category = "Unlisted")
     listing = category.categories.all()
     empty_message = ''
     if len(listing) == 0:
         empty_message = f"There are no listings for {category}"
     return render(request, "auctions/category_detail.html", {
         "listings": listing,
+        "unlisted": unlisted,
         "category": category,
         "empty_message": empty_message
     })
@@ -273,9 +331,43 @@ def category_detail(request, id):
 @login_required(login_url='/login')
 def userListings(request, id):
     user_listings = User.objects.get(pk = id)
+    if user_listings == request.user:
+        return redirect(reverse("myListings"))
+    unlisted = Category.objects.get(category = "Unlisted")
     listings = user_listings.listings.all()
+    empty_message = ''
+    if len(listings) == 0:
+        empty_message = f'No listings from {user_listings} yet'
     return render(request, "auctions/userListings.html", 
                   {
                       "user_listings": user_listings, 
-                      "listings": listings
+                      "listings": listings, 
+                      "unlisted": unlisted, 
+                      "empty_message": empty_message
                   })
+
+@login_required(login_url='/login')
+def closeBid(request, id):
+    if request.method == "POST":
+        #close auction
+        listing = AuctionListing.objects.get(pk = id)
+        user_who_bid = listing.bids.all()
+        user = user_who_bid.order_by("-bid")[0]
+        user_who_won = user.user_biding
+        user_who_posted = user.listing_id.user_id
+        listing.closed_auction = True
+        listing.save()
+        close_bid = ClosedBid(winning_user = user_who_won, listing_id = listing, original_user = user_who_posted, selling_price = user.bid )
+        close_bid.save()
+        return redirect(reverse("listing_detail", args=[id]))
+    
+@login_required(login_url='/login')
+def comments(request, id):
+    if request.method == "POST":
+        coment_form = ComentForm(request.POST)
+        if coment_form.is_valid():
+            listing = AuctionListing.objects.get(pk = id)
+            comment = coment_form.cleaned_data['comment']
+            #add comment
+            Comment.objects.create(user_id = request.user, listing_id = listing, comment = comment)
+        return redirect(reverse("listing_detail", args=[id]))

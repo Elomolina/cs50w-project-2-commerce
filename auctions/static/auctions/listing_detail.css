@@ -95,6 +95,78 @@
 {
     color: red;
 }
+
+.comments form div 
+{
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+}
+.comments textarea
+{
+    width: 70%;
+    border-radius: 10px;
+    padding: 1em;
+    background-color: rgb(228, 228, 228);
+    border: 2px solid blue;
+    outline: none;
+    font-weight: bold;
+}
+.comments input[type=submit]
+{
+    background-color: rgb(41, 41, 186);
+    border: 2px solid rgb(41, 41, 186);
+    color: white;
+    font-weight: bold;
+    margin-top: 1em;
+    width: 30%;
+    padding: 1em;
+    transition: 0.5s;
+}
+.comments input[type=submit]:hover 
+{
+    border: 2px solid rgb(142, 53, 68);;
+    background-color: rgb(142, 53, 68);
+}
+.user_comments
+{
+    margin-top: 2em;
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+}
+.comment
+{
+    padding: 1em;
+    border-radius: 5px;
+}
+.comment div 
+{
+    display: flex;
+    justify-content: space-between;
+}
+.comment h5 
+{
+    color: rgb(47, 23, 23);
+}
+.comment:nth-child(2n)
+{
+    background-color: lightgrey;
+    box-shadow: 2px 2px 2px 2px rgba(0, 0, 255, 0.1);
+}
+.comment:nth-child(2n + 1)
+{
+    background-color: lightslategrey;
+    box-shadow: 2px 2px 2px 2px rgba(255, 0, 0, 0.1);
+}
+.comment:nth-child(2n + 1) a
+{
+    color:white
+}
+.comment p
+{
+    font-weight: 600;
+}
 @media(max-width:800px)
 {
     .main-info

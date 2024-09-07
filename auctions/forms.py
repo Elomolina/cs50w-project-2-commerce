@@ -17,3 +17,13 @@ class BidForm(forms.Form):
     bid = forms.FloatField(required=True, error_messages={
         "required": "This field is required"
     })
+
+class ComentForm(forms.Form):
+    comment = forms.CharField(label="Add comment:",widget=forms.Textarea(
+        attrs={
+            'placeholder': 'comment here',
+            'class': 'comment_textarea'
+        }
+    ),max_length=300, required=True, error_messages={
+        "required": 'This field is required'
+    })

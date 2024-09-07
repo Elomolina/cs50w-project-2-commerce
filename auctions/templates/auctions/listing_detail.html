@@ -25,6 +25,16 @@ listing
         </div>
         <hr>
         <div>
+            {% if listing.closed_auction%}
+            {% if user == winner %}
+            <h3>The auction is closed</h3>
+            <h3><b>You won this auction!!</b></h3>
+            <h4>Selling price: ${{selling_price}}</h4>
+            {% else %}
+            <h3>The auction is closed</h3>
+            <h3>Sell to <a href="{%url 'userListings' winner.id %}">{{winner}}</a> for <b>${{selling_price}}</b></h3>
+            {% endif %}
+            {%else%}
             <h3>Starting bid: ${{listing.starting_bid}}</h3>
             {% if user.is_authenticated %}
             {% if user == user_biding %}
@@ -42,13 +52,14 @@ listing
                 {{error_bid}}
             </h4>
             {% else %}
-            <form action="" class="bid" method="post">
+            <form action="{% url 'closeBid' listing.id%}" class="bid" method="post">
                 {% csrf_token %}
                 <input type="submit" value="Close Bid" id="closeBid">
             </form>
             {% endif %}
             {% else %}
             <h4>You need to <a href="{% url 'login'%}">sign in</a> to be able to bid on an item</h4>
+            {% endif %}
             {% endif %}
         </div>
     </section>
@@ -59,11 +70,42 @@ listing
         {%else%}
         <li>Listed by: <a href="{% url 'userListings' listing.user_id.id%}">{{listing.user_id}}</a></li>
         {% endif %}
-        {% if listing.category_id is not None%}
+        {% if listing.category_id != unlisted %}
         <li>Category: <a href="{% url 'category_detail' listing.category_id.id%}">{{listing.category_id}}</a></li>
         {% else %}
         <li>Category: No category listed</li>
         {% endif %}
     </ul>
+    {% if user.is_authenticated %}
+    <hr>
+    <section class="comments">
+        <h2>Comments</h2>
+        <form action="{% url 'comments' listing.id %}" method="post">
+            {% csrf_token %}
+            {{coment_form}}
+            <input type="submit" value="Add Comment">
+        </form>
+        <div class="user_comments">
+            {% for comment in listing_comments %}
+            <div class="comment">
+                <div>
+                    <h3>
+                        <b>
+                        <a href="{% url 'userListings' comment.user_id.id %}">
+                            {{comment.user_id}}</b>
+                        </a>
+                    </h3>
+                    <h5>{{comment.datetime}}</h5>
+                </div>
+                <p>
+                    {{comment.comment}}
+                </p>
+            </div>
+            {% empty %}
+            <h4>No comments on this listings yet</h4>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
 </main>
 {% endblock %}

@@ -6,8 +6,8 @@
             <div class="information">
                 <h2>{{listing.title}}</h2>
                 <h3><b>Price:</b> ${{listing.starting_bid}}</h3>
-                {% if listing.category_id is not None%}
-                <h3><b>Category:</b> {{listing.category_id}}</h3>
+                {% if listing.category_id != unlisted %}
+                <h3><b>Category: </b>{{listing.category_id}}</h3>
                 {% endif %}
                 <h5>Created: {{listing.datetime}}</h5>
                 <h4>

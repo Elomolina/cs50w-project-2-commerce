@@ -7,5 +7,24 @@ watchlist
 
 {% block body %}
 <h2>Watchlist</h2>
-{% include "auctions/listings.html" %}
+<main class="main">
+    {% for listing in listings %}
+    <div class="listing">
+        <a href="{%url 'listing_detail' listing.id%}" class="listing_a">
+            <img src="{{listing.image_url}}">
+            <div class="information">
+                <h2>{{listing.title}}</h2>
+                <h3><b>Price:</b> ${{listing.starting_bid}}</h3>
+                <h4>
+                    <a href="{%url 'listing_detail' listing.id%}">
+                        See more information
+                    </a>
+                </h4>
+            </div>
+        </a>
+        </div>
+    {% empty %}
+    <h3>{{empty_message}}</h3>
+    {% endfor %}
+</main>
 {% endblock %}
