@@ -10,7 +10,7 @@
 
     <form action="{% url 'register' %}" method="post" class="login">
         {% csrf_token %}
-        <div class="form-group">
+        <div>
             <input autofocus type="text" name="username" placeholder="Username">
         </div>
         <div>

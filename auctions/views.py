@@ -12,6 +12,7 @@ import json
 
 
 def index(request):
+    #create session to save watchlist
     if "watchlist_count" not in request.session:
             request.session['watchlist_count'] = 0
     if "watchlist" not in request.session:
@@ -60,11 +61,26 @@ def logout_view(request):
 def register(request):
     if request.method == "POST":
         username = request.POST["username"]
+        if not username:
+             return render(request, "auctions/register.html", {
+                "message": "Enter username"
+            })
         email = request.POST["email"]
-
+        if not email:
+             return render(request, "auctions/register.html", {
+                "message": "Enter email"
+            })
         # Ensure password matches confirmation
         password = request.POST["password"]
+        if not password:
+            return render(request, "auctions/register.html", {
+                "message": "Enter password"
+            }) 
         confirmation = request.POST["confirmation"]
+        if not confirmation:
+             return render(request, "auctions/register.html", {
+                "message": "Enter password confirmation"
+            })
         if password != confirmation:
             return render(request, "auctions/register.html", {
                 "message": "Passwords must match."
@@ -107,8 +123,8 @@ def listing_detail(request, id):
             #bid too small
             if bid < starting_bid.starting_bid:
                 return bids_for_listing(request,id, form, "The bid must be bigger than the starting bid")
-            #no bids placed yet
-            elif len(bids_placed) == 0 and bid >= starting_bid.starting_bid:
+            #no bids placed yet just the starting one
+            elif len(bids_placed) == 1 and bid >= starting_bid.starting_bid:
                 #create new bid
                 new_bid = Bid(listing_id = starting_bid, user_biding = request.user, bid = bid)
                 new_bid.save()
@@ -150,17 +166,10 @@ def bids_for_listing(request, id, form, error_bid):
     #get max bid
     max_bid = Bid.objects.filter(listing_id = listing).aggregate(Max("bid"))
     #get the user who did the max bid
-    user_bids = Bid.objects.filter(bid = max_bid['bid__max'])
-    if len(user_bids) > 0:
-        user_bids = user_bids[0].user_biding
-    else:
-        #if no one has made a bid get the user who posted the starting bid
-        user_bids = listing.user_id
-    current_bid = ''
-    if max_bid['bid__max'] is None:
-        current_bid = "There are no bids placed yet"
-    else:
-        current_bid = f"The current bid is at ${max_bid['bid__max']}"
+    user_bids = Bid.objects.filter(bid = max_bid['bid__max'], listing_id = listing).order_by("-id")
+    print(user_bids)
+    user_bids = user_bids[0].user_biding
+    current_bid = f"The current bid is at ${max_bid['bid__max']}"
     if listing_serialize in request.session['watchlist']:
         return render(request, "auctions/listing_detail.html", {
         "listing": listing,
