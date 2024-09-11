@@ -167,7 +167,6 @@ def bids_for_listing(request, id, form, error_bid):
     max_bid = Bid.objects.filter(listing_id = listing).aggregate(Max("bid"))
     #get the user who did the max bid
     user_bids = Bid.objects.filter(bid = max_bid['bid__max'], listing_id = listing).order_by("-id")
-    print(user_bids)
     user_bids = user_bids[0].user_biding
     current_bid = f"The current bid is at ${max_bid['bid__max']}"
     if listing_serialize in request.session['watchlist']:
