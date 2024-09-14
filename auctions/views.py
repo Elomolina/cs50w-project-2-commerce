@@ -363,6 +363,10 @@ def closeBid(request, id):
         user = user_who_bid.order_by("-bid")[0]
         user_who_won = user.user_biding
         user_who_posted = user.listing_id.user_id
+        if(user_who_won == user_who_posted and len(user_who_bid) == 2):
+            user = user_who_bid.order_by("-bid")[1]
+            user_who_won = user.user_biding
+            user_who_posted = user.listing_id.user_id
         listing.closed_auction = True
         listing.save()
         close_bid = ClosedBid(winning_user = user_who_won, listing_id = listing, original_user = user_who_posted, selling_price = user.bid )
